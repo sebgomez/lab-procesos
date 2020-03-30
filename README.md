@@ -79,11 +79,52 @@ int main()
 }
 
 ```
-![punto2](./p3.png)
+![punto3](./p3.png)
 ```  
 -Sí, se puede dando un sleep al proceso padre tal que de tiempo al hijo para terminar su ejecución.
 ```
 4. Escriba un programa que llame ```fork()``` y entonces llame alguna forma de ```exec()``` para correr el programa ```/bin/ls```. Intente probar todas las variaciones de la familia de funciones ```exec()``` incluyendo (en linux) ```execl()```, ```execle()```, ```execlp()```, ```execv()```, ```execvp()``` y ```execvpe()```. ¿Por qué piensa usted que existen tantas variaciones para la misma llamada básica?
+```C
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/wait.h> 
+
+int main(int argc, char *argv[]) {
+	char *args[] = {"/bin/ls", NULL};
+    char *args2[] = {"ls", NULL};
+    char *args3[] = {"$ROUTE", NULL};
+    char *env[] = {"ROUTE=/bin/ls", NULL};
+
+	if(fork()==0){
+	    //printf("execl: \n");
+        //execl("/bin/ls", "/bin/ls", NULL);
+        
+	    //printf("execlp: \n");
+        //execlp("ls", "ls", NULL);
+        
+        //printf("execle: \n");
+        //execle("/bin/ls", "$ROUTE",NULL, env);
+        
+        //printf("execv: \n");
+        //execv("/bin/ls", args);
+       
+        //printf("execvp: \n");
+        //execvp("ls", args2);
+       
+        printf("execve: \n");
+        execve("/bin/ls", args3, env);
+    }else{
+        wait(NULL);
+        printf("fin");
+    }                
+	return 0;
+}
+```
+![punto4](./p4.png)
+```  
+-Para dar flexibildad en la forma en la que se pasan los parámetros del programa a ejecutar y para ofrecer la posibilidad de usar variables de entorno propias.
+```
 5. Escriba ahora un programa que use ```wait()``` para esperar que el proceso hijo finalice su ejecución. ¿Cuál es el valor de retorno de la función ```wait()```?, ¿Qué pasa si usted usa la función ```wait``` en el hijo?
 6. Haga un programa, como el del ejercicio anterior, con una breve modificación, la cual consiste en usar ```waitpid()``` en lugar de ```wait()```. ¿Cuándo podría ser ```waitpid()``` útil?
 7. Escriba un programa que cree un proceso hijo y entonces en el proceso hijo cierre la salida estandar (```STDOUT FILENO```). ¿Qué pasa si el hijo llama ```printf()``` para imprimir alguna salida después de cerrar el descriptor?
