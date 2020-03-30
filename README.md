@@ -129,6 +129,44 @@ int main(int argc, char *argv[]) {
 6. Haga un programa, como el del ejercicio anterior, con una breve modificación, la cual consiste en usar ```waitpid()``` en lugar de ```wait()```. ¿Cuándo podría ser ```waitpid()``` útil?
 7. Escriba un programa que cree un proceso hijo y entonces en el proceso hijo cierre la salida estandar (```STDOUT FILENO```). ¿Qué pasa si el hijo llama ```printf()``` para imprimir alguna salida después de cerrar el descriptor?
 8. Escriba un programa que cree dos hijos y conecte la salida estándar de un hijo a la entrada estándar del otro usando la llamada a sistema ```pipe()```
+```C
+#include <sys/types.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/wait.h> 
+
+#define SIZE 512
+ 
+int main( int argc, char *argv[] ){
+  pid_t pid1,pid2;
+  int p[2], readbytes;
+  char buffer[SIZE];
+ 
+  pipe(p);
+ 
+  if ( (pid1=fork()) == 0 ){ // hijo 1
+    close( p[0] ); 
+    strcpy( buffer, "Soy hijo 1 hablándote por una tubería" );
+    write( p[1], buffer, strlen( buffer ) );
+    close( p[1] );
+    
+  }else{
+      if ( (pid2=fork()) == 0 ){ // hijo 2
+        close( p[1] );
+        while( (readbytes=read(p[0], buffer, SIZE)) > 0)
+          write(1, buffer, readbytes);
+        close( p[0] );
+      } 
+  }
+  waitpid( pid1, NULL, 0 );
+  waitpid( pid2, NULL, 0 );
+  exit(0);
+}
+```
+![punto8](./p8.png)
 
 ## 3. Entregable ##
 
