@@ -126,8 +126,83 @@ int main(int argc, char *argv[]) {
 -Para dar flexibildad en la forma en la que se pasan los parámetros del programa a ejecutar y para ofrecer la posibilidad de usar variables de entorno propias.
 ```
 5. Escriba ahora un programa que use ```wait()``` para esperar que el proceso hijo finalice su ejecución. ¿Cuál es el valor de retorno de la función ```wait()```?, ¿Qué pasa si usted usa la función ```wait``` en el hijo?
+```C
+#include<stdio.h> 
+#include<unistd.h>
+#include <stdlib.h>
+
+
+int main(){
+    pid_t pid;
+    printf("El id del padre es = %d\n", getpid());
+    pid = fork();
+    if(pid == 0){
+        printf("Id del proceso hijo= %d\n", getpid());
+        int w = wait(NULL);
+        printf("El valor de w es = %d\n", w);
+    }else{
+        int x = wait(NULL);
+        printf("el valor de x = %d\n", x);
+    }
+    
+    return 0;
+}
+```
+![punto5](./p5.png)
+```  
+-La función wait retorna la ID del proceso hijo.
+Si la función wait() es usada dentro de un proceso que no tiene hijos retornará -1.
+```
 6. Haga un programa, como el del ejercicio anterior, con una breve modificación, la cual consiste en usar ```waitpid()``` en lugar de ```wait()```. ¿Cuándo podría ser ```waitpid()``` útil?
+```C
+#include<stdio.h> 
+#include<unistd.h>
+#include <stdlib.h>
+
+int main(){
+    pid_t pid;
+    int status;
+
+    printf("El id del padre es = %d\n", getpid());
+    pid = fork();
+    if(pid == 0){
+        printf("Id del proceso hijo= %d\n", getpid());
+        for(int i = 0; i < 10; i++){
+            printf("i = %d\n", i);
+        }  
+    }else{
+        int x = waitpid(pid, &status, 0);
+        printf("El valor de status es = %d\n", status);
+        printf("el valor de x = %d\n", x);
+    }
+    
+    return 0;
+}
+```
+![punto6](./p6.png)
+```  
+-Resultaría de utilidad en situaciones en las que no se necesita esperar a todos los procesos hijos sino a uno solo.
+```
 7. Escriba un programa que cree un proceso hijo y entonces en el proceso hijo cierre la salida estandar (```STDOUT FILENO```). ¿Qué pasa si el hijo llama ```printf()``` para imprimir alguna salida después de cerrar el descriptor?
+```C
+#include<stdio.h>
+#include<unistd.h>
+
+int main(){
+    
+    if(fork() == 0){
+        close(STDOUT_FILENO);
+        printf("Soy el hijo\n");
+    }else{
+        printf("Soy el padre\n");
+    }
+    return 0;
+}
+```
+![punto7](./p7.png)
+```  
+-Cuando el hijo intentar usar la funcion printf() después de usar el descriptor no sucede nada, es decir no imprime nada.
+```
 8. Escriba un programa que cree dos hijos y conecte la salida estándar de un hijo a la entrada estándar del otro usando la llamada a sistema ```pipe()```
 ```C
 #include <sys/types.h>
